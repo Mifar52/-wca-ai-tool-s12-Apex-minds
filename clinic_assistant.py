@@ -201,3 +201,34 @@ def summarise(log):
             "topics_covered": sorted({t["topic"] for t in log}),
         }
     return summary
+
+def save_session(log, summary):
+    """Save the conversation and summary to sessions/ with the date and time
+    in the file name. Returns the file path, or None if saving fails."""
+    now = datetime.now()
+    path = os.path.join(
+        SESSIONS_DIR, f"session_{now.strftime('%Y-%m-%d_%H-%M-%S')}.json")
+    record = {
+        "date": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "conversation": log,
+        "summary": summary,
+    }
+    try:
+        os.makedirs(SESSIONS_DIR, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(record, file, indent=2, ensure_ascii=False)
+        return path
+    except OSError as error:
+        print(f"  [Could not save the session: {error}]")
+        return None
+
+
+def display_summary(summary):
+    """Print a summary in a readable way."""
+    print("\n=== SESSION SUMMARY ===")
+    print(summary["overview"])
+    print("\nQuestions and answers:")
+    for number, item in enumerate(summary["questions_and_answers"], start=1):
+        print(f"  {number}. Q: {item['question']}")
+        print(f"     A: {item['answer']}")
+    print("\nTopics covered: " + ", ".join(summary["topics_covered"]))
