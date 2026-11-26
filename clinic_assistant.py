@@ -262,3 +262,26 @@ def display_summary(summary):
             print("Afya Assistant: Sorry, I could not answer just now. "
                   "Please try again, or call reception on 0795 000 000.")
             continue
+
+# Add the checked reply to memory and to the save-log
+        messages.append({"role": "assistant",
+                         "content": json.dumps(data, ensure_ascii=False)})
+        log.append({
+            "patient": user_text,
+            "assistant": data["answer"],
+            "topic": data["topic"],
+            "is_diagnosis_request": data["is_diagnosis_request"],
+            "already_answered": data["already_answered"],
+        })
+        print(f"\nAfya Assistant: {data['answer']}")
+
+    if not log:
+        print("\nNo questions were asked, so nothing was saved.")
+        return
+
+    print("\nCreating your session summary...")
+    summary = summarise(log)
+    display_summary(summary)
+    path = save_session(log, summary)
+    if path:
+        print(f"\nSession saved to: {path}")
