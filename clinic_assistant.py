@@ -174,3 +174,30 @@ def get_valid_reply(system_prompt, messages, required_fields):
             continue
         return data
     return None
+
+    # 4. SESSION: CHAT LOOP, SUMMARY, SAVING
+# ---------------------------------------------------------------------------
+def build_transcript(log):
+    """Turn the saved turns into plain text for the summary call."""
+    lines = []
+    for turn in log:
+        lines.append(f"Patient: {turn['patient']}")
+        lines.append(f"Assistant: {turn['assistant']}")
+    return "\n".join(lines)
+
+def summarise(log):
+    """Final AI call: summarise the whole conversation using SUMMARY_PROMPT.
+    If it fails, build a simple summary without AI so nothing is lost."""
+    messages = [{"role": "user", "content": build_transcript(log)}]
+    summary = get_valid_reply(SUMMARY_PROMPT, messages, SUMMARY_FIELDS)
+    if summary is None:
+        print("  [AI summary unavailable - saving a basic summary instead]")
+        summary = {
+            "overview": "AI summary could not be created for this session.",
+            "questions_and_answers": [
+                {"question": t["patient"], "answer": t["assistant"]}
+                for t in log
+            ],
+            "topics_covered": sorted({t["topic"] for t in log}),
+        }
+    return summary
