@@ -232,3 +232,33 @@ def display_summary(summary):
         print(f"  {number}. Q: {item['question']}")
         print(f"     A: {item['answer']}")
     print("\nTopics covered: " + ", ".join(summary["topics_covered"]))
+
+    def run_session():
+    """One conversation. 'messages' is the memory: it is sent in full with
+    every API call, so the AI can use everything said earlier."""
+    messages = []   # what the AI sees (alternating user / assistant)
+    log = []        # what we save to the file
+    print("\nAfya Assistant: Hello! Ask me about our hours, services, prices "
+          "or booking.")
+    print("(Type 'end' to finish the session.)")
+
+    while True:
+        try:
+            user_text = input("\nYou: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        if not user_text:                      # empty input is handled
+            print("Afya Assistant: Please type a question first.")
+            continue
+        if user_text.lower() in ("end", "quit", "exit"):
+            break
+
+        messages.append({"role": "user", "content": user_text})
+        data = get_valid_reply(SYSTEM_PROMPT, messages, REPLY_FIELDS)
+
+        if data is None:                       # both attempts failed
+            messages.pop()                     # forget this failed question
+            print("Afya Assistant: Sorry, I could not answer just now. "
+                  "Please try again, or call reception on 0795 000 000.")
+            continue
