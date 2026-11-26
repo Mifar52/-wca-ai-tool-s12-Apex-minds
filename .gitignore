@@ -1,0 +1,11 @@
+# Secrets - NEVER commit these
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# my test sessions (keep only the one in samples/)
+sessions/*.json
