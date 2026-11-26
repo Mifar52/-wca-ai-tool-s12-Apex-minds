@@ -108,3 +108,31 @@ these fields:
   "topics_covered": ["topic1", "topic2"]
 }
 """.strip()
+
+# 3. API CALL AND ANSWER CHECK
+# ---------------------------------------------------------------------------
+def ask_model(system_prompt, messages):
+    """Send the system prompt and the FULL message list to the model.
+    Returns the reply text. Raises an exception if the call fails."""
+    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from environment
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=800,
+        system=system_prompt,
+        messages=messages,
+    )
+    return response.content[0].text
+
+
+def parse_json(raw_text):
+    """Turn the model's reply into a dict. Raises ValueError if it is not
+    a valid JSON object. Removes json fences if the model added them."""
+    text = raw_text.strip()
+    if text.startswith(""):
+        text = text.strip("`").strip()
+        if text.lower().startswith("json"):
+            text = text[4:]
+    data = json.loads(text)  # json.JSONDecodeError is a kind of ValueError
+    if not isinstance(data, dict):
+        raise ValueError("JSON is not an object")
+    return data
