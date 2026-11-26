@@ -136,3 +136,41 @@ def parse_json(raw_text):
     if not isinstance(data, dict):
         raise ValueError("JSON is not an object")
     return data
+
+def validate_fields(data, required_fields):
+    """Check every required field is present and not empty.
+    Returns a list of the fields that are missing or empty."""
+    problems = []
+    for field in required_fields:
+        value = data.get(field)
+        empty_text = isinstance(value, str) and not value.strip()
+        empty_list = isinstance(value, list) and len(value) == 0
+        if value is None or empty_text or empty_list:
+            problems.append(field)  # note: False is a valid, non-empty value
+    return problems
+
+
+def get_valid_reply(system_prompt, messages, required_fields):
+    """Call the model and check the reply. If the call or the check fails,
+    retry ONCE. Returns the checked dict, or None if both attempts fail."""
+    for attempt in (1, 2):
+        extra = ""
+        if attempt == 2:
+            extra = ("\n\nIMPORTANT: your previous reply was invalid. Reply "
+                     "with ONLY the JSON object, with every field filled in.")
+        try:
+            raw = ask_model(system_prompt + extra, messages)
+        except Exception as error:  # no internet, bad key, rate limit...
+            print(f"  [Connection problem: {error}]")
+            continue
+        try:
+            data = parse_json(raw)
+        except ValueError:
+            print("  [The reply was not valid JSON]")
+            continue
+        problems = validate_fields(data, required_fields)
+        if problems:
+            print(f"  [The reply had missing or empty fields: {problems}]")
+            continue
+        return data
+    return None
