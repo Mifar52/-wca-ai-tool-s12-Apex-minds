@@ -285,3 +285,40 @@ def display_summary(summary):
     path = save_session(log, summary)
     if path:
         print(f"\nSession saved to: {path}")
+        
+# 5. OPENING PAST SESSIONS
+# ---------------------------------------------------------------------------
+def view_past_session():
+    """List saved sessions, let the user pick one, and display it."""
+    files = sorted(glob.glob(os.path.join(SESSIONS_DIR, "*.json"))
+                   + glob.glob(os.path.join(SAMPLES_DIR, "*.json")))
+    if files:
+        print("\nSaved sessions:")
+        for number, file in enumerate(files, start=1):
+            print(f"  {number}. {file}")
+    else:
+        print("\nNo saved sessions found yet.")
+
+    choice = input("Enter a number or a file path (blank to cancel): ").strip()
+    if not choice:
+        return
+    if choice.isdigit() and 1 <= int(choice) <= len(files):
+        path = files[int(choice) - 1]
+    else:
+        path = choice
+
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            record = json.load(file)
+        print(f"\nSession date: {record['date']}")
+        print("\n--- Conversation ---")
+        for turn in record["conversation"]:
+            print(f"You: {turn['patient']}")
+            print(f"Afya Assistant: {turn['assistant']}\n")
+        display_summary(record["summary"])
+    except FileNotFoundError:
+        print(f"  [File not found: {path}]")
+    except (json.JSONDecodeError, KeyError, TypeError):
+        print("  [That file is not a valid session file]")
+    except OSError as error:
+        print(f"  [Could not open the file: {error}]")
