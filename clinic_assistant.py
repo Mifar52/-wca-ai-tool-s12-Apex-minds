@@ -322,3 +322,33 @@ def view_past_session():
         print("  [That file is not a valid session file]")
     except OSError as error:
         print(f"  [Could not open the file: {error}]")
+        
+# 6. MAIN MENU
+# ---------------------------------------------------------------------------
+def main():
+    """Menu loop: new session, open past session, exit."""
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        print("No API key found. Create a .env file containing:\n"
+              "ANTHROPIC_API_KEY=your-key-here")
+        return
+
+    while True:
+        print("\n=== Afya Bora Clinic FAQ Assistant ===")
+        print("1. Start a new session")
+        print("2. Open a past session")
+        print("3. Exit")
+        choice = input("Choose 1, 2 or 3: ").strip()
+
+        if choice == "1":
+            run_session()
+        elif choice == "2":
+            view_past_session()
+        elif choice == "3":
+            print("Goodbye!")
+            break
+        else:
+            print("Please type 1, 2 or 3.")
+
+
+if __name__ == "__main__":
+    main()
