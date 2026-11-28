@@ -233,7 +233,8 @@ def display_summary(summary):
         print(f"     A: {item['answer']}")
     print("\nTopics covered: " + ", ".join(summary["topics_covered"]))
 
-    def run_session():
+
+def run_session():
     """One conversation. 'messages' is the memory: it is sent in full with
     every API call, so the AI can use everything said earlier."""
     messages = []   # what the AI sees (alternating user / assistant)
